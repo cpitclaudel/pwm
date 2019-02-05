@@ -153,6 +153,11 @@ class PasswordDriver(object):
                     PasswordDriver.run_action_on_pw(args, pwds[0])
 
     @staticmethod
+    def print(args):
+        args.pw_action = PasswordActions.print
+        return PasswordDriver.get(args)
+
+    @staticmethod
     def exact(args):
         PasswordDriver.add_domain(args)
         PasswordDriver.add_username(args)
@@ -252,6 +257,9 @@ def parse_args():
     get_parser = add_subparser(subparsers, "get", PasswordDriver.get,
                                help="Like `search', but save password if there's just one result.")
     add_print_arg(get_parser)
+
+    print_parser = add_subparser(subparsers, "print", PasswordDriver.print,
+                               help="Like `get', but display password instead of copying.")
 
     exact_parser = add_subparser(subparsers, "exact", PasswordDriver.exact,
                                  help="Save password of account matching search terms exactly.")
