@@ -234,8 +234,8 @@ def add_gen_args(subparser):
 
 def parse_args():
     parser = ArgumentParser(description='Generate, store, and retrieve passwords.')
-    parser.add_argument("--password-store", help="Location of the password store",
-                        default=os.path.expanduser("~/.pam-store"))
+    parser.add_argument("--password-store", help="Location of the password store [default: ~/.pwm].",
+                        default=os.path.expanduser("~/.pwm"))
     parser.add_argument("--master-password", help="Master password")
 
     subparsers = parser.add_subparsers(help='Action', dest="action")
