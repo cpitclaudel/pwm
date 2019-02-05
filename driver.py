@@ -190,6 +190,30 @@ class PasswordDriver(object):
                 PasswordDriver.print_accounts(pwds)
 
     @staticmethod
+    def pwned_search_response(response, sha1):
+        bs = response.read()
+        header = sha1[5:].upper() + b":"
+        start = bs.find(header)
+        if start >= 0:
+            end = bs.find(b"\r\n", start)
+            return int(bs[start + len(header):end if end >= 0 else None])
+        return 0
+
+    @staticmethod
+    def pwned(args):
+        import urllib.request
+        API_ROOT = "https://api.pwnedpasswords.com/range/"
+        USER_AGENT = "PWM-password-manager"
+        with PasswordManager(args.password_store, args.master_password, mode="w") as db:
+            for pwd in db.passwords:
+                sha1 = pwd.sha1(args.master_password)
+                query_url = API_ROOT + sha1[:5].decode('ascii')
+                request = urllib.request.Request(query_url, None, {'User-Agent': USER_AGENT})
+                with urllib.request.urlopen(request) as response:
+                    print(PasswordDriver.format_account(pwd),
+                          PasswordDriver.pwned_search_response(response, sha1))
+
+    @staticmethod
     def search(args):
         if not args.domain:
             PasswordDriver.add_domain(args)
@@ -311,6 +335,9 @@ def parse_args():
     recode_parser = subparsers.add_parser("recode")
     recode_parser.add_argument("password", nargs='?', default=None)
     recode_parser.set_defaults(handler=PasswordDriver.recode)
+
+    pwned_parser = subparsers.add_parser("pwned")
+    pwned_parser.set_defaults(handler=PasswordDriver.pwned)
 
     args = parser.parse_args()
     if getattr(args, "needs_master", True):
