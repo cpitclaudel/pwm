@@ -42,7 +42,7 @@ class PasswordDriver(object):
     @staticmethod
     def format_account_helper(domain, username):
         if username is not None and domain is not None:
-            return "'{}'@'{}'".format(username, domain)
+            return "'{}' @ '{}'".format(username, domain)
         elif username is not None:
             return "username '{}'".format(username)
         elif domain is not None:
