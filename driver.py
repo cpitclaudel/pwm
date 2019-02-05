@@ -105,9 +105,14 @@ class PasswordDriver(object):
             PasswordDriver.run_action_on_pw(args, new_pwd)
 
     @staticmethod
-    def print_accounts(pwds):
-        print_err(tabulate([(pw.domain, pw.username) for pw in pwds],
-                           headers=("Domain", "Username"), tablefmt="rst"))
+    def print_accounts(pwds, master_password=None):
+        if master_password:
+            pwds = [(pw.domain, pw.username, pw.cleartext(master_password)) for pw in pwds]
+            headers = ("Domain", "Username", "Password")
+        else:
+            pwds = [(pw.domain, pw.username) for pw in pwds]
+            headers = ("Domain", "Username")
+        print_err(tabulate(pwds, headers=headers, tablefmt="rst"))
 
     @staticmethod
     def warn_if_no_records_found(args, pwds):
@@ -167,7 +172,8 @@ class PasswordDriver(object):
         with PasswordManager(args.password_store, args.master_password) as db:
             pwds = db.find(PasswordPredicates.regexp(args.domain, args.username))
             if not PasswordDriver.warn_if_no_records_found(args, pwds):
-                PasswordDriver.print_accounts(pwds)
+                master_password = args.master_password if args.pw_action is PasswordActions.print else None
+                PasswordDriver.print_accounts(pwds, master_password)
 
     @staticmethod
     def read(args):
