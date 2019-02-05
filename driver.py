@@ -216,9 +216,10 @@ class PasswordActions:
     @staticmethod
     def clip(pwd, account):
         try:
+            delay = 10
             xerox.copy(pwd, xsel=True)
-            print_err("Password copied to clipboard for {}; clearing in 5 seconds.".format(account))
-            sleep(5)
+            print_err("Password copied to clipboard for {}; clearing in {} seconds.".format(account, delay))
+            sleep(delay)
         finally:
             xerox.copy("", xsel=True)
             print_err("Clipboard cleared.")
