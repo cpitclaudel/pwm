@@ -216,9 +216,9 @@ def add_subparser(subparsers, name, handler, default=None, **kwargs):
     subparser.set_defaults(handler=handler)
     return subparser
 
-def add_print_arg(subparser):
+def add_print_arg(subparser, default=PasswordActions.clip):
     subparser.add_argument("--print", action="store_const", dest="pw_action",
-                           const=PasswordActions.print, default=PasswordActions.clip)
+                           const=PasswordActions.print, default=default)
 
 def add_overwrite_arg(subparser):
     subparser.add_argument("--overwrite", action="store_true",
