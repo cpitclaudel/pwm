@@ -300,7 +300,8 @@ def parse_args():
 
     args = parser.parse_args()
     if getattr(args, "needs_master", True):
-        args.master_password = query("Enter password:", getpass, args.master_password)
+        # Prompt needs to be recognized by emacs' comint-password-prompt-regexp
+        args.master_password = query("Enter password for pwm store:", getpass, args.master_password)
 
     if not hasattr(args, "handler"):
         args.domain = None
