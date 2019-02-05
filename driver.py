@@ -4,8 +4,9 @@ from getpass import getpass
 from argparse import ArgumentParser
 
 import xerox
-from time import sleep
 from tabulate import tabulate
+
+from time import sleep
 from .generator import PasswordGenerator
 from .core import Password, PasswordManager, PasswordStore, PasswordPredicates, InvalidKeyException
 
@@ -292,14 +293,14 @@ def parse_args():
     subparsers = parser.add_subparsers(help='Action', dest="action")
 
     get_parser = add_subparser(subparsers, "get", PasswordDriver.get,
-                               help="Like `search', but save password if there's just one result.")
+                               help="Like `search', but copy password of shortest username to clipboard.")
     add_print_arg(get_parser)
 
     print_parser = add_subparser(subparsers, "print", PasswordDriver.print,
                                help="Like `get', but display password instead of copying.")
 
     exact_parser = add_subparser(subparsers, "exact", PasswordDriver.exact,
-                                 help="Save password of account matching search terms exactly.")
+                                 help="Copy password of account matching search terms exactly to clipboard.")
     add_print_arg(exact_parser)
 
     search_parser = add_subparser(subparsers, "search", PasswordDriver.search,

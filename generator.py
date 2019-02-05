@@ -1,7 +1,6 @@
 import os
 import random
 import string
-from typing import *
 
 class PasswordGenerator:
     @staticmethod
