@@ -85,10 +85,8 @@ class PasswordDriver(object):
             return PasswordDriver.put_helper(args, db)
 
     @staticmethod
-    def new(args):
-        PasswordDriver.add_domain(args)
-        PasswordDriver.add_username(args)
-        if args.dumb:
+    def generate_pwd(args):
+        if args.simple:
             generator = PasswordGenerator.letters_string
             args.length = args.length or 10
         elif args.no_passphrase:
@@ -100,9 +98,20 @@ class PasswordDriver(object):
             generator = lambda l: PasswordGenerator.passphrase(wordlist, l)
             args.length = args.length or 5
         args.password = generator(args.length)
+
+    @staticmethod
+    def new(args):
+        PasswordDriver.add_domain(args)
+        PasswordDriver.add_username(args)
+        PasswordDriver.generate_pwd(args)
         new_pwd = PasswordDriver.put(args)
         if new_pwd:
             PasswordDriver.run_action_on_pw(args, new_pwd)
+
+    @staticmethod
+    def gen(args):
+        PasswordDriver.generate_pwd(args)
+        print_err(args.password)
 
     @staticmethod
     def print_accounts(pwds, master_password=None):
@@ -266,6 +275,11 @@ def parse_args():
     add_overwrite_arg(new_parser)
     add_print_arg(new_parser)
 
+    gen_parser = add_subparser(subparsers, "gen", PasswordDriver.gen,
+                               help="Like `new', but don't store the passphrase.")
+    add_gen_args(gen_parser)
+    gen_parser.set_defaults(needs_master=False)
+
     read_parser = add_subparser(subparsers, "read", PasswordDriver.read, help="Read records from standard input.")
     read_parser.add_argument("--file", default="-")
     add_overwrite_arg(read_parser)
@@ -275,7 +289,8 @@ def parse_args():
     recode_parser.set_defaults(handler=PasswordDriver.recode)
 
     args = parser.parse_args()
-    args.master_password = query("Enter password:", getpass, args.master_password)
+    if getattr(args, "needs_master", True):
+        args.master_password = query("Enter password:", getpass, args.master_password)
 
     if not hasattr(args, "handler"):
         args.domain = None
