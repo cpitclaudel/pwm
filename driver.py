@@ -149,8 +149,8 @@ class PasswordDriver(object):
             if not PasswordDriver.warn_if_no_records_found(args, pwds):
                 if PasswordDriver.warn_if_more_than_one_record_found(args, pwds):
                     PasswordDriver.print_accounts(pwds)
-                else:
-                    PasswordDriver.run_action_on_pw(args, pwds[0])
+                _, shortest = min(((len(pwd.username), len(pwd.domain)), pwd) for pwd in pwds)
+                PasswordDriver.run_action_on_pw(args, shortest)
 
     @staticmethod
     def print(args):
