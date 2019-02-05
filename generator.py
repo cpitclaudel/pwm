@@ -26,7 +26,7 @@ class PasswordGenerator:
 
     @staticmethod
     def letters_string(length):
-        pools = [string.ascii_lowercase, string.ascii_uppercase, " "]
+        pools = [string.ascii_lowercase, string.ascii_uppercase, string.digits]
         return "".join(PasswordGenerator.sequence(length, *pools))
 
     @staticmethod
