@@ -179,6 +179,17 @@ class PasswordDriver(object):
                 print_err("Record deleted: {}".format(PasswordDriver.format_account(args)))
 
     @staticmethod
+    def pwsearch(args):
+        pattern = query("Pattern:", input)
+        with PasswordManager(args.password_store, args.master_password, mode="w") as db:
+            pwds = db.find(PasswordPredicates.cleartext_pattern(pattern, args.master_password))
+            print_err()
+            if not pwds:
+                print_err("No records found")
+            else:
+                PasswordDriver.print_accounts(pwds)
+
+    @staticmethod
     def search(args):
         if not args.domain:
             PasswordDriver.add_domain(args)
@@ -275,6 +286,9 @@ def parse_args():
                                help="Add a new record to the password store.")
     put_parser.add_argument("password", nargs='?', default=None)
     add_overwrite_arg(put_parser)
+
+    pwsearch_parser = add_subparser(subparsers, "pwsearch", PasswordDriver.pwsearch,
+                                       help="Find all accounts whose password matches a pattern.")
 
     delete_parser = add_subparser(subparsers, "delete", PasswordDriver.delete,
                                   help="Delete a record from the password store.")

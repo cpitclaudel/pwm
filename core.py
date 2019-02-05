@@ -167,6 +167,15 @@ class PasswordPredicates(object):
     def exact(domain, username):
         return lambda pw: (domain == pw.domain and username == pw.username)
 
+    @staticmethod
+    def cleartext_pattern(pattern, master_password):
+        import fnmatch
+        import sys
+        def check_one(pw):
+            print(".", file=sys.stderr, end="", flush=True)
+            return fnmatch.fnmatch(pw.cleartext(master_password), pattern)
+        return check_one
+
 class PasswordManager(object):
     def __init__(self, store_path, master_password, mode="r"):
         self.store = None
