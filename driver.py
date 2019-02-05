@@ -95,7 +95,9 @@ class PasswordDriver(object):
             generator = PasswordGenerator.password
             args.length = args.length or 10
         else:
-            generator = PasswordGenerator.passphrase
+            with open(args.wordlist) as f:
+                wordlist = [line.strip() for line in f]
+            generator = lambda l: PasswordGenerator.passphrase(wordlist, l)
             args.length = args.length or 5
         args.password = generator(args.length)
         new_pwd = PasswordDriver.put(args)
@@ -216,6 +218,14 @@ def add_overwrite_arg(subparser):
     subparser.add_argument("--overwrite", action="store_true",
                            help="Overwrite existing accounts without prompting.")
 
+def add_gen_args(subparser):
+    subparser.add_argument("--wordlist", default="/usr/share/dict/words")
+    subparser.add_argument("--length", type=int, default=None)
+    subparser.add_argument("--no-passphrase", action="store_true",
+                           help="Generate a password instead of a passphrase.")
+    subparser.add_argument("--simple", action="store_true",
+                           help="Generate a short ascii-only string.")
+
 def parse_args():
     parser = ArgumentParser(description='Generate, store, and retrieve passwords.')
     parser.add_argument("--password-store", help="Location of the password store",
@@ -246,11 +256,7 @@ def parse_args():
 
     new_parser = add_subparser(subparsers, "new", PasswordDriver.new,
                                help="Like `put', but generate a random passphrase.")
-    new_parser.add_argument("--length", type=int, default=None)
-    new_parser.add_argument("--no-passphrase", action="store_true",
-                            help="Generate a password instead of a passphrase.")
-    new_parser.add_argument("--dumb", action="store_true",
-                            help="Generate a short ascii letters string.")
+    add_gen_args(new_parser)
     add_overwrite_arg(new_parser)
     add_print_arg(new_parser)
 

@@ -31,8 +31,7 @@ class PasswordGenerator:
         return "".join(PasswordGenerator.sequence(length, *pools))
 
     @staticmethod
-    def passphrase(length):
-        words = [line.strip() for line in open("/usr/share/dict/words")]
+    def passphrase(words, length):
         ascii_letters = set(string.ascii_letters)
         ascii_words = [word for word in words if all(c in ascii_letters for c in word)]
         phrase = PasswordGenerator.sequence(length, ascii_words)
