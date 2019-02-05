@@ -210,8 +210,9 @@ class PasswordDriver(object):
 
 class PasswordActions:
     @staticmethod
-    def print(pwd, _):
-        print_err(pwd)
+    def print(pwd, account):
+        print_err("Password for {}:".format(account))
+        print(pwd)
 
     @staticmethod
     def clip(pwd, account):
