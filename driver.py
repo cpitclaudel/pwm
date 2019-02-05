@@ -13,10 +13,10 @@ def print_err(*args, **kwargs):
     kwargs.update(file=sys.stderr, flush=True)
     print(*args, **kwargs)
 
-def query(header, prompt, answer = ""):
-    while answer == "" or answer == None:
+def query(header, prompt, answer=None, default=None):
+    while answer is None:
         print_err(header + " ", end="")
-        answer = prompt("")
+        answer = prompt("") or default
     return answer
 
 class PasswordDriver(object):
@@ -54,7 +54,8 @@ class PasswordDriver(object):
 
     @staticmethod
     def put_query_overwrite(account):
-        return query("Account {} already exists; update? [Y/n]".format(account), input) in ["y", "Y", ""]
+        qstring = "Account {} already exists; update? [Y/n]".format(account)
+        return query(qstring, input, default="") in "yY"
 
     @staticmethod
     def find_conflicts(db, pwd, master_pwd):
