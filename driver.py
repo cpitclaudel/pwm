@@ -92,6 +92,9 @@ class PasswordDriver(object):
         if args.simple:
             generator = PasswordGenerator.letters_string
             args.length = args.length or 10
+        elif args.security_answer:
+            generator = PasswordGenerator.security_answer
+            args.length = args.length or 5
         elif args.no_passphrase:
             generator = PasswordGenerator.password
             args.length = args.length or 10
@@ -287,6 +290,8 @@ def add_gen_args(subparser):
                            help="Generate a password instead of a passphrase.")
     subparser.add_argument("--simple", action="store_true",
                            help="Generate a short ascii-only string.")
+    subparser.add_argument("--security-answer", action="store_true",
+                           help="Generate a short lowercase ascii string.")
 
 def parse_args():
     parser = ArgumentParser(description='Generate, store, and retrieve passwords.')

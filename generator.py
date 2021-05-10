@@ -30,6 +30,10 @@ class PasswordGenerator:
         return "".join(PasswordGenerator.sequence(length, *pools))
 
     @staticmethod
+    def security_answer(length):
+        return "".join(PasswordGenerator.sequence(length, string.ascii_lowercase))
+
+    @staticmethod
     def passphrase(words, length):
         ascii_letters = set(string.ascii_letters)
         ascii_words = [word for word in words if all(c in ascii_letters for c in word)]
