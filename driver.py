@@ -31,7 +31,7 @@ class PasswordDriver(object):
 
     @staticmethod
     def add_password(args):
-        needs_new_input = (args.password == None)
+        needs_new_input = (args.password is None)
         account = PasswordDriver.format_account(args)
         while needs_new_input:
             args.password = query("Enter password for {}:".format(account), getpass)
@@ -44,10 +44,11 @@ class PasswordDriver(object):
     def format_account_helper(domain, username):
         if username is not None and domain is not None:
             return "'{}' @ '{}'".format(username, domain)
-        elif username is not None:
+        if username is not None:
             return "username '{}'".format(username)
-        elif domain is not None:
+        if domain is not None:
             return "domain '{}'".format(domain)
+        raise ValueError()
 
     @staticmethod
     def format_account(args):
@@ -76,6 +77,7 @@ class PasswordDriver(object):
             db.remove(lambda x: x in conflicts or x in duplicates)
             db.add(new)
             return new
+        return None
 
     @staticmethod
     def put(args):
@@ -129,12 +131,14 @@ class PasswordDriver(object):
         if len(pwds) == 0:
             print_err("No record found for {}.".format(PasswordDriver.format_account(args)))
             return True
+        return False
 
     @staticmethod
     def warn_if_more_than_one_record_found(args, pwds):
         if len(pwds) > 1:
             print_err("Multiple records found for {}.".format(PasswordDriver.format_account(args)))
             return True
+        return False
 
     @staticmethod
     def run_action_on_pw(args, pwd):

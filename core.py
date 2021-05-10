@@ -196,5 +196,5 @@ class PasswordManager(object):
         return self.store.db
 
     def __exit__(self, *exc_info):
-        if self.store != None and self.mode == "w":
+        if self.store is not None and self.mode == "w":
             self.store.save_to(self.store_path, self.master_password)
