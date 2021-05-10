@@ -91,13 +91,13 @@ class PasswordDriver(object):
     def generate_pwd(args):
         if args.simple:
             generator = PasswordGenerator.letters_string
-            args.length = args.length or 10
+            args.length = args.length or 12
         elif args.security_answer:
             generator = PasswordGenerator.security_answer
             args.length = args.length or 5
         elif args.no_passphrase:
             generator = PasswordGenerator.password
-            args.length = args.length or 10
+            args.length = args.length or 12
         else:
             with open(args.wordlist) as f:
                 wordlist = [line.strip() for line in f]
