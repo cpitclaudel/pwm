@@ -337,11 +337,11 @@ def parse_args():
     read_parser.add_argument("--file", default="-")
     add_overwrite_arg(read_parser)
 
-    recode_parser = subparsers.add_parser("recode")
+    recode_parser = subparsers.add_parser("recode", help="Rewrite the full database")
     recode_parser.add_argument("password", nargs='?', default=None)
     recode_parser.set_defaults(handler=PasswordDriver.recode)
 
-    pwned_parser = subparsers.add_parser("pwned")
+    pwned_parser = subparsers.add_parser("pwned", help="Check for pwned accounts")
     pwned_parser.set_defaults(handler=PasswordDriver.pwned)
 
     args = parser.parse_args()
