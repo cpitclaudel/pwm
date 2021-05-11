@@ -148,10 +148,14 @@ class PasswordDriver(object):
         args.pw_action(pwd.cleartext(args.master_password), PasswordDriver.format_account(pwd))
 
     @staticmethod
-    def get(args):
+    def ensure_domain(args):
         if not args.domain:
             PasswordDriver.add_domain(args)
             PasswordDriver.add_username(args)
+
+    @staticmethod
+    def get(args):
+        PasswordDriver.ensure_domain(args)
         with PasswordManager(args.password_store, args.master_password) as db:
             pwds = db.find(PasswordPredicates.regexp(args.domain, args.username))
             if not PasswordDriver.warn_if_no_records_found(args, pwds):
@@ -223,9 +227,7 @@ class PasswordDriver(object):
 
     @staticmethod
     def search(args):
-        if not args.domain:
-            PasswordDriver.add_domain(args)
-            PasswordDriver.add_username(args)
+        PasswordDriver.ensure_domain(args)
         with PasswordManager(args.password_store, args.master_password) as db:
             pwds = db.find(PasswordPredicates.regexp(args.domain, args.username))
             if not PasswordDriver.warn_if_no_records_found(args, pwds):
