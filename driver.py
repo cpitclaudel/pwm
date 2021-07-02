@@ -60,10 +60,10 @@ class PasswordDriver(object):
         return query(qstring, input, default="") in "yY"
 
     @staticmethod
-    def find_conflicts(db, pwd, master_pwd):
+    def find_conflicts(db, pwd, master_pwd, check_cleartext=True):
         duplicates, conflicts = [], []
         for other in db.find(PasswordPredicates.exact(pwd.domain, pwd.username)):
-            same = pwd.cleartext(master_pwd) == other.cleartext(master_pwd)
+            same = (not check_cleartext) or pwd.cleartext(master_pwd) == other.cleartext(master_pwd)
             (duplicates if same else conflicts).append(other)
         return conflicts, duplicates
 
@@ -86,6 +86,25 @@ class PasswordDriver(object):
         PasswordDriver.add_password(args)
         with PasswordManager(args.password_store, args.master_password, mode="w") as db:
             return PasswordDriver.put_helper(args, db)
+
+    @staticmethod
+    def merge_helper(args, dst, src):
+        for pw in src.passwords:
+            # FIXME add an option to compare the cleartexts, too
+            conflicts, duplicates = PasswordDriver.find_conflicts(dst, pw, args.master_password, check_cleartext=False)
+            if conflicts:
+                print_err("Conflicting record skipped: {}".format(pw))
+            elif duplicates:
+                print_err("Duplicate record skipped: {}".format(pw))
+            else:
+                print_err("New record copied: {}".format(pw))
+                dst.add(pw)
+
+    @staticmethod
+    def merge(args):
+        with PasswordManager(args.password_store, args.master_password, mode="w") as db:
+            with PasswordManager(args.other_store, args.master_password, mode="w") as other:
+                PasswordDriver.merge_helper(args, db, other)
 
     @staticmethod
     def generate_pwd(args):
@@ -343,6 +362,10 @@ def parse_args():
     read_parser = add_subparser(subparsers, "read", PasswordDriver.read, help="Read records from standard input.")
     read_parser.add_argument("--file", default="-")
     add_overwrite_arg(read_parser)
+
+    merge_parser = subparsers.add_parser("merge", help="Copy passwords from another database.")
+    merge_parser.add_argument("other_store")
+    merge_parser.set_defaults(handler=PasswordDriver.merge)
 
     recode_parser = subparsers.add_parser("recode", help="Rewrite the full database")
     recode_parser.add_argument("password", nargs='?', default=None)
