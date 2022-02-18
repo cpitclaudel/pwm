@@ -46,7 +46,7 @@ class Message(object):
     def encrypt(cleartext, password):
         iv, salt = os.urandom(AES.block_size), os.urandom(32)
         keys = Encryption.derive_keys(password, salt)
-        ciphertext = AES.new(keys.encryption_key, AES.MODE_CFB, iv).encrypt(cleartext)
+        ciphertext = AES.new(keys.encryption_key, AES.MODE_CFB, iv).encrypt(cleartext.encode("utf-8"))
         digest = HMAC.new(keys.digest_key, ciphertext, SHA512).digest()
         return Message(iv, salt, digest, ciphertext)
 
