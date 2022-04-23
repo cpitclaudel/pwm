@@ -118,7 +118,7 @@ class PasswordDriver(object):
             generator = PasswordGenerator.password
             args.length = args.length or 12
         else:
-            with open(args.wordlist) as f:
+            with open(args.wordlist, encoding="utf-8") as f:
                 wordlist = [line.strip() for line in f]
             generator = lambda l: PasswordGenerator.passphrase(wordlist, l)
             args.length = args.length or 5
@@ -132,6 +132,19 @@ class PasswordDriver(object):
         new_pwd = PasswordDriver.put(args)
         if new_pwd:
             PasswordDriver.run_action_on_pw(args, new_pwd)
+
+    @staticmethod
+    def rename(args):
+        PasswordDriver.add_domain(args)
+        PasswordDriver.add_username(args)
+        with PasswordManager(args.password_store, args.master_password, mode="w") as db:
+            if pw := PasswordDriver.exact_helper(db, args):
+                args.username = query("New username?", input, args.new_username)
+                cleartext = pw.cleartext(args.master_password)
+                print_err("Creating record {}.".format(PasswordDriver.format_account(args)))
+                db.add(Password(args.domain, args.username, cleartext, args.master_password))
+                print_err("Deleting record {}".format(PasswordDriver.format_account(pw)))
+                db.remove(lambda x: x == pw)
 
     @staticmethod
     def gen(args):
@@ -189,25 +202,29 @@ class PasswordDriver(object):
         return PasswordDriver.get(args)
 
     @staticmethod
+    def exact_helper(db, args):
+        pwds = db.find(PasswordPredicates.exact(args.domain, args.username))
+        if not (PasswordDriver.warn_if_no_records_found(args, pwds) or
+                PasswordDriver.warn_if_more_than_one_record_found(args, pwds)):
+            return pwds[0]
+        return None
+
+    @staticmethod
     def exact(args):
         PasswordDriver.add_domain(args)
         PasswordDriver.add_username(args)
         with PasswordManager(args.password_store, args.master_password) as db:
-            pwds = db.find(PasswordPredicates.exact(args.domain, args.username))
-            if not (PasswordDriver.warn_if_no_records_found(args, pwds) or
-                    PasswordDriver.warn_if_more_than_one_record_found(args, pwds)):
-                PasswordDriver.run_action_on_pw(args, pwds[0])
+            if pw := PasswordDriver.exact_helper(db, args):
+                PasswordDriver.run_action_on_pw(args, pw)
 
     @staticmethod
     def delete(args):
         PasswordDriver.add_domain(args)
         PasswordDriver.add_username(args)
         with PasswordManager(args.password_store, args.master_password, mode="w") as db:
-            pwds = db.find(PasswordPredicates.exact(args.domain, args.username))
-            if not (PasswordDriver.warn_if_no_records_found(args, pwds) or
-                    PasswordDriver.warn_if_more_than_one_record_found(args, pwds)):
-                db.remove(lambda x: x in pwds)
-                print_err("Record deleted: {}".format(PasswordDriver.format_account(args)))
+            if pw := PasswordDriver.exact_helper(db, args):
+                print_err("Deleting record {}".format(PasswordDriver.format_account(pw)))
+                db.remove(lambda x: x == pw)
 
     @staticmethod
     def pwsearch(args):
@@ -341,6 +358,11 @@ def parse_args():
                                help="Add a new record to the password store.")
     put_parser.add_argument("password", nargs='?', default=None)
     add_overwrite_arg(put_parser)
+
+    rename_parser = add_subparser(subparsers, "rename", PasswordDriver.rename,
+                                  help="Change the username of an existing record in the password store.")
+    rename_parser.add_argument("new_username", nargs='?', default=None)
+    add_overwrite_arg(rename_parser)
 
     pwsearch_parser = add_subparser(subparsers, "pwsearch", PasswordDriver.pwsearch,
                                        help="Find all accounts whose password matches a pattern.")
