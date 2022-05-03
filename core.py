@@ -5,9 +5,10 @@ import re
 import base64
 from collections import namedtuple, OrderedDict
 
-from Crypto.Cipher import AES
-from Crypto.Hash import HMAC, SHA512, SHA
-from Crypto.Protocol.KDF import PBKDF2
+# pip install pycryptodomex
+from Cryptodome.Cipher import AES
+from Cryptodome.Hash import HMAC, SHA512, SHA
+from Cryptodome.Protocol.KDF import PBKDF2
 
 class InvalidKeyException(Exception):
     pass
